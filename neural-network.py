@@ -67,3 +67,21 @@ LSTM_model.add( Dense(1) )
 # Compile the model with the adam optimizer
 # Measure loss using MSQE
 LSTM_model.compile(optimizer= 'adam', loss= 'mean_squared_error')
+
+# Train the model
+LSTM_model.fit(prev_train, next_train, batch_size= 1, epochs= 1)
+
+# Make dataset for testing
+test_data = scaled_data[ training_len - PREDICTION_LEN : , : ]
+
+# Make arrays for holding data to test model on (prev_test) 
+# and actual values the model is attempting to predict (actual_vals)
+prev_test = []
+actual_vals = dataset[ training_len : , : ]
+
+# Fill test dataset with last PREDICTION_LEN vals
+for day in range(PREDICTION_LEN, len(test_data)):
+    prev_test.append( test_data[day - PREDICTION_LEN : day, 0] )
+
+# Convert to np array to be used in LSTM model
+prev_test = np.array(prev_test)
