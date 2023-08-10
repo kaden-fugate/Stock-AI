@@ -17,8 +17,8 @@ yfin.pdr_override()
 # Store program vars
 STOCK_NAME = 'GOOG'
 START_DATE = '2000-01-01'
-END_DATE = '2023-07-01'
-PREDICTION_LEN = 60
+END_DATE = '2033-07-01'
+PREDICTION_LEN = 4
 
 # Load in selected stock over given start and end dates
 dataframe = pdr.get_data_yahoo(STOCK_NAME, start= START_DATE, end= END_DATE)
@@ -69,7 +69,7 @@ LSTM_model.add( Dense(1) )
 LSTM_model.compile(optimizer= 'adam', loss= 'mean_squared_error')
 
 # Train the model
-LSTM_model.fit(prev_train, next_train, batch_size= 1, epochs= 1)
+LSTM_model.fit(prev_train, next_train, batch_size= 1, epochs= 2)
 
 # Make dataset for testing
 test_data = scaled_data[ training_len - PREDICTION_LEN : , : ]
@@ -85,3 +85,32 @@ for day in range(PREDICTION_LEN, len(test_data)):
 
 # Convert to np array to be used in LSTM model
 prev_test = np.array(prev_test)
+
+# Reshape test dataset to fit into LSTM model
+prev_test = np.reshape(prev_test, (prev_test.shape[0], prev_test.shape[1], 1))
+
+# Run test dataset on model to evaluate performance
+predicted = LSTM_model.predict(prev_test)
+predicted = scale.inverse_transform(predicted)
+
+# Tests to determine effectiveness of model
+mean_squared_error = np.sqrt( np.mean( (predicted - actual_vals) ** 2 ) )
+print( "Root Mean Squared Error: " + str(mean_squared_error) )
+
+# Data to be plotted
+data = dataframe.filter(['Close'])
+trained_on = data[ : training_len ]
+actual = data[ training_len : ]
+
+# Plot data on graph
+plt.figure( figsize= (16, 8))
+plt.title("Model Predictions")
+plt.xlabel("Date")
+plt.ylabel("Closing Price [USD]")
+
+plt.plot(dataframe.index[:training_len], trained_on, label='Trained On')
+plt.plot(dataframe.index[training_len:], actual, label='Actual')
+plt.plot(dataframe.index[training_len:], predicted, label='Predicted')
+
+plt.legend()
+plt.show()
