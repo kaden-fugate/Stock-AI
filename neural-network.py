@@ -9,14 +9,20 @@ import matplotlib.pyplot as plt
 
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential
+from keras.models import load_model
 from keras.layers import Dense, LSTM
 from keras.losses import Huber
+
+try:
+    loaded_model = load_model('my_model.h5')
+except:
+    pass
 
 # Override pdr due to lack of connection between pdr and yahoo
 yfin.pdr_override() 
 
 # Store program vars
-STOCK_NAME = 'GOOG'
+STOCK_NAME = 'AAPL'
 START_DATE = '1990-01-01'
 END_DATE = '2023-07-01'
 SLIDING_WINDOW_LEN = 45
@@ -59,10 +65,13 @@ LSTM_model = Sequential()
 
 # Add LSTM layers of NN
 LSTM_model.add( LSTM(100, return_sequences= True, input_shape= (prev_train.shape[1], 1)) )
-LSTM_model.add( LSTM(100, return_sequences= False, ) )
+LSTM_model.add( LSTM(200, return_sequences= True) )
+LSTM_model.add( LSTM(400, return_sequences= False, ) )
 
 # Add regular densly connected layers of NN
-LSTM_model.add( Dense(50) )
+LSTM_model.add( Dense(400) )
+LSTM_model.add( Dense(200) )
+LSTM_model.add( Dense(100) )
 LSTM_model.add( Dense(1) )
 
 # Compile the model with the adam optimizer
@@ -70,7 +79,7 @@ LSTM_model.add( Dense(1) )
 LSTM_model.compile(optimizer= 'adam', loss=Huber(delta=1.0))
 
 # Train the model
-LSTM_model.fit(prev_train, next_train, batch_size= 1, epochs= 2)
+LSTM_model.fit(prev_train, next_train, batch_size= 3, epochs= 2)
 
 # Make dataset for testing
 test_data = scaled_data[ training_len - SLIDING_WINDOW_LEN : , : ]
@@ -98,7 +107,7 @@ predicted = scale.inverse_transform(predicted)
 mean_squared_error = np.sqrt( np.mean( (predicted - actual_vals) ** 2 ) )
 print( "Root Mean Squared Error: " + str(mean_squared_error) )
 
-future_days = 50
+future_days = 365
 new_input = scale.transform(actual_vals)
 new_input = new_input[-SLIDING_WINDOW_LEN:]
 print("new_input:" + str(new_input))
@@ -139,3 +148,5 @@ plt.plot(future_dates, predicted_future, label='Predicted Future')
 
 plt.legend()
 plt.show()
+
+LSTM_model.save('my_model.h5')
