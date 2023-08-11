@@ -7,22 +7,18 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+from df import df
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential
 from keras.models import load_model
 from keras.layers import Dense, LSTM
 from keras.losses import Huber
 
-yfin.pdr_override() 
-
-# Store program vars
-STOCK_NAME = 'AAPL'
-START_DATE = '1990-01-01'
-END_DATE = '2023-07-01'
-SLIDING_WINDOW_LEN = 100
+SLIDING_WINDOW_LEN = 365
 
 # Load in selected stock over given start and end dates
-dataframe = pdr.get_data_yahoo(STOCK_NAME, start= START_DATE, end= END_DATE)
+DF = df()
+dataframe = DF.get_data()
 
 # Store filtered closing price in dataset as a np array
 dataset = np.array( dataframe.filter(['Close']) )

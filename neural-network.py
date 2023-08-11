@@ -1,37 +1,26 @@
 # Import libraries
 
 import math
-import pandas_datareader.data as pdr
-import yfinance as yfin
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+from df import dataframe
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential
 from keras.models import load_model
 from keras.layers import Dense, LSTM
 from keras.losses import Huber
 
-try:
-    loaded_model = load_model('my_model.h5')
-except:
-    pass
 
-# Override pdr due to lack of connection between pdr and yahoo
-yfin.pdr_override() 
-
-# Store program vars
-STOCK_NAME = 'AAPL'
-START_DATE = '1990-01-01'
-END_DATE = '2023-07-01'
 SLIDING_WINDOW_LEN = 45
 
 # Load in selected stock over given start and end dates
-dataframe = pdr.get_data_yahoo(STOCK_NAME, start= START_DATE, end= END_DATE)
+DF = dataframe()
+df = DF.get_data()
 
 # Store filtered closing price in dataset as a np array
-dataset = np.array( dataframe.filter(['Close']) )
+dataset = np.array( data_frame.filter(['Close']) )
 
 # Train on 80% of dataset
 training_len = math.ceil(len(dataset) * 0.8)
